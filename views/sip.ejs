@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIP Calculator</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="calculator-container">
+        <h1>Financial Calculators</h1>
+        
+        <div class="tabs">
+            <a href="/sip" class="tab-btn active">SIP</a>
+            <a href="/swp" class="tab-btn">SWP</a>
+            <a href="/inflation" class="tab-btn">SIP with Inflation</a>
+        </div>
+
+        <div class="calc-grid">
+            <div class="inputs-side">
+                <div class="input-group">
+                    <label>Monthly investment (₹)</label>
+                    <input type="number" id="sipAmount" value="25000" oninput="syncFields('sipAmount', 'sipAmountSlider')">
+                    <input type="range" id="sipAmountSlider" min="500" max="100000" step="500" value="25000" oninput="syncFields('sipAmountSlider', 'sipAmount')">
+                </div>
+                <div class="input-group">
+                    <label>Expected return rate (p.a. %)</label>
+                    <input type="number" id="sipRate" value="12" step="0.1" oninput="syncFields('sipRate', 'sipRateSlider')">
+                    <input type="range" id="sipRateSlider" min="1" max="30" step="0.1" value="12" oninput="syncFields('sipRateSlider', 'sipRate')">
+                </div>
+                <div class="input-group">
+                    <label>Time period (Years)</label>
+                    <input type="number" id="sipYears" value="10" oninput="syncFields('sipYears', 'sipYearsSlider')">
+                    <input type="range" id="sipYearsSlider" min="1" max="40" step="1" value="10" oninput="syncFields('sipYearsSlider', 'sipYears')">
+                </div>
+            </div>
+            <div class="outputs-side">
+                <div id="sipResultOutputs" class="results-text"></div>
+                <div class="chart-wrapper">
+                    <canvas id="sipChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/script.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            if (typeof computeSIP === 'function') {
+                computeSIP();
+            }
+        });
+    </script>
+</body>
+</html>

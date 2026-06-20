@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIP Inflation Calculator</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="calculator-container">
+        <h1>Financial Calculators</h1>
+        
+        <div class="tabs">
+            <a href="/sip" class="tab-btn">SIP</a>
+            <a href="/swp" class="tab-btn">SWP</a>
+            <a href="/inflation" class="tab-btn active">SIP with Inflation</a>
+        </div>
+
+        <div class="calc-grid">
+            <div class="inputs-side">
+                <div class="input-group">
+                    <label>Monthly investment (₹)</label>
+                    <input type="number" id="infAmount" value="25000" oninput="syncFields('infAmount', 'infAmountSlider')">
+                    <input type="range" id="infAmountSlider" min="500" max="100000" step="500" value="25000" oninput="syncFields('infAmountSlider', 'infAmount')">
+                </div>
+                <div class="input-group">
+                    <label>Expected return rate (p.a. %)</label>
+                    <input type="number" id="infRate" value="12" step="0.1" oninput="syncFields('infRate', 'infRateSlider')">
+                    <input type="range" id="infRateSlider" min="1" max="30" step="0.1" value="12" oninput="syncFields('infRateSlider', 'infRate')">
+                </div>
+                <div class="input-group">
+                    <label>Expected inflation rate (p.a. %)</label>
+                    <input type="number" id="infInflation" value="6" step="0.1" oninput="syncFields('infInflation', 'infInflationSlider')">
+                    <input type="range" id="infInflationSlider" min="1" max="15" step="0.1" value="6" oninput="syncFields('infInflationSlider', 'infInflation')">
+                </div>
+                <div class="input-group">
+                    <label>Time period (Years)</label>
+                    <input type="number" id="infYears" value="10" oninput="syncFields('infYears', 'infYearsSlider')">
+                    <input type="range" id="infYearsSlider" min="1" max="40" step="1" value="10" oninput="syncFields('infYearsSlider', 'infYears')">
+                </div>
+            </div>
+            <div class="outputs-side">
+                <div id="infResultOutputs" class="results-text"></div>
+                <div class="chart-wrapper">
+                    <canvas id="infChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/script.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            if (typeof computeInflationSIP === 'function') {
+                computeInflationSIP();
+            }
+        });
+    </script>
+</body>
+</html>
