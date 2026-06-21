@@ -26,6 +26,10 @@ app.get('/inflation', (req, res) => {
     res.render('inflation'); // Renders views/inflation.ejs (Inflation)
 });
 
+app.get('/fd', (req, res) => {
+    res.render('fd'); // Renders views/fd.ejs (Fixed Deposit)
+});
+
 // Start the application server
 app.listen(3000, () => {
     console.log('Server is tracking on http://localhost:3000');

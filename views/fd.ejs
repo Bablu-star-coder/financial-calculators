@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FD Calculator</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="calculator-container">
+        <h1>Financial Calculators</h1>
+        
+        <div class="tabs">
+            <a href="/sip" class="tab-btn">SIP</a>
+            <a href="/swp" class="tab-btn">SWP</a>
+            <a href="/inflation" class="tab-btn">SIP with Inflation</a>
+            <a href="/fd" class="tab-btn active">FD</a>
+        </div>
+
+        <div class="calc-grid">
+            <div class="inputs-side">
+                <div class="input-group">
+                    <label>Deposit amount (₹)</label>
+                    <input type="number" id="fdPrincipal" value="100000" oninput="syncFields('fdPrincipal', 'fdPrincipalSlider')">
+                    <input type="range" id="fdPrincipalSlider" min="1000" max="10000000" step="1000" value="100000" oninput="syncFields('fdPrincipalSlider', 'fdPrincipal')">
+                </div>
+                <div class="input-group">
+                    <label>Annual interest rate (%)</label>
+                    <input type="number" id="fdRate" value="7.5" step="0.1" oninput="syncFields('fdRate', 'fdRateSlider')">
+                    <input type="range" id="fdRateSlider" min="1" max="20" step="0.1" value="7.5" oninput="syncFields('fdRateSlider', 'fdRate')">
+                </div>
+                <div class="input-group">
+                    <label>Time period (Years)</label>
+                    <input type="number" id="fdYears" value="5" oninput="syncFields('fdYears', 'fdYearsSlider')">
+                    <input type="range" id="fdYearsSlider" min="1" max="30" step="1" value="5" oninput="syncFields('fdYearsSlider', 'fdYears')">
+                </div>
+                <div class="input-group">
+                    <label>Compounding frequency</label>
+                    <select id="fdFrequency" onchange="computeFD()">
+                        <option value="12">Monthly</option>
+                        <option value="4">Quarterly</option>
+                        <option value="1">Annually</option>
+                    </select>
+                </div>
+            </div>
+            <div class="outputs-side">
+                <div id="fdResultOutputs" class="results-text"></div>
+                <div class="chart-wrapper">
+                    <canvas id="fdChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/script.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            if (typeof computeFD === 'function') {
+                computeFD();
+            }
+        });
+    </script>
+</body>
+</html>

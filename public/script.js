@@ -16,6 +16,7 @@ function syncFields(sourceId, targetId) {
     if (sourceId.startsWith('sip')) computeSIP();
     if (sourceId.startsWith('swp')) computeSWP();
     if (sourceId.startsWith('inf')) computeInflationSIP();
+    if (sourceId.startsWith('fd')) computeFD();
 }
 
 // 2. Standard SIP Calculation (Locked to Groww Math)
@@ -83,7 +84,32 @@ function computeSWP() {
     updateChart('swpChart', ['Total Investment', 'Est. Returns'], [initialLump, safeGains], ['#e2e8f0', '#00d09c']);
 }
 
-// 4. Inflation SIP Calculation
+// 4. Fixed Deposit Calculation
+function computeFD() {
+    const principal = Number(document.getElementById('fdPrincipal').value);
+    const annualRate = Number(document.getElementById('fdRate').value);
+    const years = Number(document.getElementById('fdYears').value);
+    const frequency = Number(document.getElementById('fdFrequency').value);
+
+    if (!principal || !annualRate || !years || !frequency) return;
+
+    const r = annualRate / 100;
+    const n = frequency;
+    const t = years;
+
+    const maturityValue = principal * Math.pow(1 + r / n, n * t);
+    const interestEarned = maturityValue - principal;
+
+    document.getElementById('fdResultOutputs').innerHTML = `
+        <div class="result-row"><span>Principal amount</span> <strong>₹${principal.toLocaleString('en-IN')}</strong></div>
+        <div class="result-row"><span>Interest earned</span> <strong>₹${Math.round(interestEarned).toLocaleString('en-IN')}</strong></div>
+        <div class="result-row"><span>Maturity value</span> <strong>₹${Math.round(maturityValue).toLocaleString('en-IN')}</strong></div>
+    `;
+
+    updateChart('fdChart', ['Principal', 'Interest earned'], [principal, Math.round(interestEarned)], ['#e2e8f0', '#ff9f43']);
+}
+
+// 5. Inflation SIP Calculation
 function computeInflationSIP() {
     const P = Number(document.getElementById('infAmount').value);
     const annualRate = Number(document.getElementById('infRate').value);
