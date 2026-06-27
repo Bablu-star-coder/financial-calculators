@@ -1,96 +1,92 @@
-// Test all calculator formulas
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
 
-console.log("=== SIP Calculation Test ===");
-function testSIP() {
-    const P = 500;           // Monthly investment
-    const annualRate = 12;   // 12% annual
-    const years = 10;
+function loadCalculatorFunctions() {
+    const scriptPath = path.join(__dirname, 'public', 'script.js');
+    const source = fs.readFileSync(scriptPath, 'utf8');
+    const elements = new Map();
 
-    const i = (annualRate / 100) / 12;
-    const n = Math.round(years * 12);
-    
-    const invested = P * n;
-    const totalValue = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
-    const gains = totalValue - invested;
-    
-    console.log(`Input: P=₹${P}, Rate=${annualRate}%, Years=${years}`);
-    console.log(`Monthly Rate (i): ${i} (${(i*100).toFixed(4)}%)`);
-    console.log(`Total Months (n): ${n}`);
-    console.log(`Invested: ₹${invested.toLocaleString('en-IN')}`);
-    console.log(`Total Value: ₹${Math.round(totalValue).toLocaleString('en-IN')}`);
-    console.log(`Gains: ₹${Math.round(gains).toLocaleString('en-IN')}`);
-    console.log(`Formula Used: Annuity Due = P * [((1+i)^n - 1) / i] * (1+i)`);
+    const context = {
+        document: {
+            getElementById(id) {
+                if (!elements.has(id)) {
+                    const element = {
+                        value: '',
+                        innerHTML: '',
+                        max: 0,
+                        type: 'text'
+                    };
+                    if (id === 'incomeTaxIncome') element.value = '1200000';
+                    if (id === 'incomeTaxAge') element.value = 'below60';
+                    if (id === 'incomeTaxRegime') element.value = 'old';
+                    if (id === 'incomeTaxChart' || id === 'stepupChart') element.getContext = () => ({ });
+                    elements.set(id, element);
+                }
+                return elements.get(id);
+            }
+        },
+        Chart: function () {
+            this.destroy = function () {};
+        },
+        console,
+        Math,
+        setTimeout,
+        clearTimeout,
+        window: {}
+    };
+
+    context.window = context;
+    vm.createContext(context);
+    vm.runInContext(source, context);
+    return context;
 }
-testSIP();
 
-console.log("\n=== SWP Calculation Test ===");
-function testSWP() {
-    const initialLump = 500000;    // ₹5 lakh
-    const monthlyPayout = 10000;   // ₹10k/month
-    const annualRate = 12;
-    const years = 10;
+function testIncomeTax() {
+    const context = loadCalculatorFunctions();
+    const cases = [
+        { income: 1200000, ageGroup: 'below60', regime: 'old', expected: 106600 },
+        { income: 1200000, ageGroup: '60to80', regime: 'old', expected: 96200 },
+        { income: 1200000, ageGroup: 'above80', regime: 'old', expected: 54600 },
+        { income: 1200000, ageGroup: 'below60', regime: 'new', expected: 93600 }
+    ];
 
-    const monthlyRate = (annualRate / 100) / 12;
-    const totalMonths = Math.round(years * 12);
-    
-    let balance = initialLump;
-    let totalWithdrawn = 0;
-    let monthsActive = 0;
-
-    for (let m = 0; m < totalMonths; m++) {
-        balance = balance * (1 + monthlyRate);
-        if (balance >= monthlyPayout) {
-            balance -= monthlyPayout;
-            totalWithdrawn += monthlyPayout;
-            monthsActive++;
-        } else {
-            totalWithdrawn += balance;
-            balance = 0;
-            break;
-        }
-    }
-
-    const totalEstimatedGains = (totalWithdrawn + balance) - initialLump;
-    const safeGains = totalEstimatedGains > 0 ? totalEstimatedGains : 0;
-    
-    console.log(`Input: Initial=₹${initialLump.toLocaleString('en-IN')}, Withdrawal=₹${monthlyPayout.toLocaleString('en-IN')}/month, Rate=${annualRate}%, Years=${years}`);
-    console.log(`Monthly Rate: ${monthlyRate} (${(monthlyRate*100).toFixed(4)}%)`);
-    console.log(`Months Active: ${monthsActive}/${totalMonths}`);
-    console.log(`Total Investment: ₹${initialLump.toLocaleString('en-IN')}`);
-    console.log(`Total Withdrawn: ₹${totalWithdrawn.toLocaleString('en-IN')}`);
-    console.log(`Final Balance: ₹${Math.round(balance).toLocaleString('en-IN')}`);
-    console.log(`Estimated Gains: ₹${Math.round(safeGains).toLocaleString('en-IN')}`);
+    cases.forEach(({ income, ageGroup, regime, expected }) => {
+        const doc = context.document;
+        doc.getElementById('incomeTaxIncome').value = String(income);
+        doc.getElementById('incomeTaxAge').value = ageGroup;
+        doc.getElementById('incomeTaxRegime').value = regime;
+        context.computeIncomeTax();
+        const resultText = doc.getElementById('incomeTaxResultOutputs').innerHTML;
+        const match = resultText.match(/Total tax<\/span> <strong>₹([0-9,]+)<\/strong>/);
+        const actual = match ? Number(match[1].replace(/,/g, '')) : null;
+        assert.strictEqual(actual, expected, `Income tax case failed for ${ageGroup}/${regime}`);
+    });
 }
-testSWP();
 
-console.log("\n=== Inflation SIP Calculation Test ===");
-function testInflationSIP() {
-    const P = 25000;           // Monthly investment
-    const annualRate = 12;     // 12% nominal return
-    const inflationRate = 6;   // 6% inflation
-    const years = 10;
+function testStepUpSIP() {
+    const context = loadCalculatorFunctions();
+    const doc = context.document;
+    doc.getElementById('stepupAmount').value = '10000';
+    doc.getElementById('stepupRate').value = '12';
+    doc.getElementById('stepupStep').value = '0';
+    doc.getElementById('stepupYears').value = '1';
+    context.computeStepUpSIP();
 
-    const nominalRateDec = annualRate / 100;
-    const inflationRateDec = inflationRate / 100;
-    const realAnnualRate = ((1 + nominalRateDec) / (1 + inflationRateDec)) - 1;
-    
-    const i = realAnnualRate / 12;
-    const n = Math.round(years * 12);
-
-    const invested = P * n;
-    const currentPurchasingPowerValue = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
-    const realGains = currentPurchasingPowerValue - invested;
-    const safeRealGains = realGains > 0 ? realGains : 0;
-    
-    console.log(`Input: P=₹${P.toLocaleString('en-IN')}, Nominal Rate=${annualRate}%, Inflation=${inflationRate}%, Years=${years}`);
-    console.log(`Real Annual Rate: ${(realAnnualRate*100).toFixed(4)}%`);
-    console.log(`Monthly Real Rate (i): ${i} (${(i*100).toFixed(6)}%)`);
-    console.log(`Total Months (n): ${n}`);
-    console.log(`Total Invested: ₹${invested.toLocaleString('en-IN')}`);
-    console.log(`Adjusted Present Value (inflation-adjusted): ₹${Math.round(currentPurchasingPowerValue).toLocaleString('en-IN')}`);
-    console.log(`Real Gains (adjusted for inflation): ₹${Math.round(safeRealGains).toLocaleString('en-IN')}`);
-    console.log(`Formula: Real Rate = ((1 + Nominal%) / (1 + Inflation%)) - 1`);
+    const resultText = doc.getElementById('stepupResultOutputs').innerHTML;
+    const match = resultText.match(/Maturity value<\/span> <strong>₹([0-9,]+)<\/strong>/);
+    const actual = match ? Number(match[1].replace(/,/g, '')) : null;
+    const expected = 128093;
+    assert.strictEqual(actual, expected, 'Step-Up SIP maturity value mismatch');
 }
-testInflationSIP();
 
-console.log("\n✅ All calculations executed successfully!");
+try {
+    testIncomeTax();
+    testStepUpSIP();
+    console.log('✅ Calculator validation passed');
+} catch (error) {
+    console.error('❌ Calculator validation failed');
+    console.error(error.message);
+    process.exit(1);
+}

@@ -16,6 +16,8 @@ function syncFields(sourceId, targetId) {
     if (sourceId.startsWith('sip')) computeSIP();
     if (sourceId.startsWith('swp')) computeSWP();
     if (sourceId.startsWith('inf')) computeInflationSIP();
+    if (sourceId.startsWith('stepup')) computeStepUpSIP();
+    if (sourceId.startsWith('incomeTax')) computeIncomeTax();
     if (sourceId.startsWith('fd')) computeFD();
 }
 
@@ -139,7 +141,113 @@ function computeInflationSIP() {
     updateChart('infChart', ['Total Invested', 'Real Gains'], [invested, safeRealGains], ['#e2e8f0', '#ffaa44']);
 }
 
-// 5. Universal Chart Renderer
+// 5. Step-Up SIP Calculation
+function computeStepUpSIP() {
+    const monthlyInvestment = Number(document.getElementById('stepupAmount').value);
+    const annualRate = Number(document.getElementById('stepupRate').value);
+    const stepUpRate = Number(document.getElementById('stepupStep').value);
+    const years = Number(document.getElementById('stepupYears').value);
+
+    if (!monthlyInvestment || !annualRate || !years) return;
+
+    const monthlyRate = (annualRate / 100) / 12;
+    const totalMonths = Math.round(years * 12);
+    let invested = 0;
+    let balance = 0;
+    let monthlyContribution = monthlyInvestment;
+
+    for (let month = 1; month <= totalMonths; month++) {
+        const year = Math.floor((month - 1) / 12) + 1;
+        if (month === 1 || month % 12 === 1) {
+            monthlyContribution = monthlyInvestment * Math.pow(1 + stepUpRate / 100, year - 1);
+        }
+
+        balance = (balance + monthlyContribution) * (1 + monthlyRate);
+        invested += monthlyContribution;
+    }
+
+    const gains = balance - invested;
+
+    document.getElementById('stepupResultOutputs').innerHTML = `
+        <div class="result-row"><span>Total invested</span> <strong>₹${Math.round(invested).toLocaleString('en-IN')}</strong></div>
+        <div class="result-row"><span>Est. returns</span> <strong>₹${Math.round(gains).toLocaleString('en-IN')}</strong></div>
+        <div class="result-row"><span>Maturity value</span> <strong>₹${Math.round(balance).toLocaleString('en-IN')}</strong></div>
+    `;
+
+    updateChart('stepupChart', ['Total invested', 'Est. returns'], [invested, gains], ['#e2e8f0', '#8b5cf6']);
+}
+
+// 6. Income Tax Calculation (standard slab-based estimate)
+function computeIncomeTax() {
+    const grossIncome = Number(document.getElementById('incomeTaxIncome').value);
+    const ageGroup = document.getElementById('incomeTaxAge').value;
+    const regime = document.getElementById('incomeTaxRegime').value;
+    const deduction80C = Number(document.getElementById('incomeTaxDeduction').value) || 0;
+    const standardDeduction = Number(document.getElementById('incomeTaxStandardDeduction').value) || 0;
+
+    if (!grossIncome) return;
+
+    let basicExemption = 250000;
+    let tax = 0;
+
+    if (regime === 'old') {
+        if (ageGroup === '60to80') {
+            basicExemption = 300000;
+        } else if (ageGroup === 'above80') {
+            basicExemption = 500000;
+        }
+
+        const taxableIncome = Math.max(0, grossIncome - basicExemption - deduction80C - standardDeduction);
+
+        if (taxableIncome > 250000) {
+            tax += (Math.min(taxableIncome, 500000) - 250000) * 0.05;
+        }
+        if (taxableIncome > 500000) {
+            tax += (Math.min(taxableIncome, 1000000) - 500000) * 0.20;
+        }
+        if (taxableIncome > 1000000) {
+            tax += (taxableIncome - 1000000) * 0.30;
+        }
+
+        tax = Math.max(0, tax);
+    } else {
+        const taxableIncome = Math.max(0, grossIncome - deduction80C - standardDeduction);
+
+        if (taxableIncome > 300000) {
+            tax += (Math.min(taxableIncome, 600000) - 300000) * 0.05;
+        }
+        if (taxableIncome > 600000) {
+            tax += (Math.min(taxableIncome, 900000) - 600000) * 0.10;
+        }
+        if (taxableIncome > 900000) {
+            tax += (Math.min(taxableIncome, 1200000) - 900000) * 0.15;
+        }
+        if (taxableIncome > 1200000) {
+            tax += (Math.min(taxableIncome, 1500000) - 1200000) * 0.20;
+        }
+        if (taxableIncome > 1500000) {
+            tax += (taxableIncome - 1500000) * 0.30;
+        }
+    }
+
+    const taxBeforeCess = Math.round(tax);
+    const cess = Math.round(taxBeforeCess * 0.04);
+    const rebate = taxBeforeCess < 25000 ? taxBeforeCess : 0;
+    const totalTax = Math.max(0, taxBeforeCess + cess - rebate);
+
+    document.getElementById('incomeTaxResultOutputs').innerHTML = `
+        <div class="result-row"><span>Gross income</span> <strong>₹${grossIncome.toLocaleString('en-IN')}</strong></div>
+        <div class="result-row"><span>Taxable income</span> <strong>₹${Math.max(0, grossIncome - deduction80C - standardDeduction).toLocaleString('en-IN')}</strong></div>
+        <div class="result-row"><span>Tax before cess</span> <strong>₹${taxBeforeCess.toLocaleString('en-IN')}</strong></div>
+        <div class="result-row"><span>Health & education cess</span> <strong>₹${cess.toLocaleString('en-IN')}</strong></div>
+        <div class="result-row"><span>Rebate</span> <strong>₹${rebate.toLocaleString('en-IN')}</strong></div>
+        <div class="result-row"><span>Total tax</span> <strong>₹${totalTax.toLocaleString('en-IN')}</strong></div>
+    `;
+
+    updateChart('incomeTaxChart', ['Gross income', 'Total tax'], [grossIncome, totalTax], ['#e2e8f0', '#ef4444']);
+}
+
+// 7. Universal Chart Renderer
 function updateChart(canvasId, labels, dataArray, colors) {
     const el = document.getElementById(canvasId);
     if (!el) return;

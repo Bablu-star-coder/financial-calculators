@@ -26,6 +26,14 @@ app.get('/inflation', (req, res) => {
     res.render('inflation'); // Renders views/inflation.ejs (Inflation)
 });
 
+app.get('/stepupsip', (req, res) => {
+    res.render('stepupsip'); // Renders views/stepupsip.ejs (Step-Up SIP)
+});
+
+app.get('/incometax', (req, res) => {
+    res.render('incometax'); // Renders views/incometax.ejs (Income Tax)
+});
+
 app.get('/fd', (req, res) => {
     res.render('fd'); // Renders views/fd.ejs (Fixed Deposit)
 });

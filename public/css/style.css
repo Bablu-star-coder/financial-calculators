@@ -115,7 +115,7 @@ h1 {
 }
 
 /* Numeric Text Inputs */
-.input-group input[type="number"] {
+.input-group input[type="number"], .input-group select {
     background: var(--input-bg);
     border: 1px solid var(--card-border);
     color: var(--text-primary);
@@ -128,7 +128,7 @@ h1 {
     width: 100%;
 }
 
-.input-group input[type="number"]:focus {
+.input-group input[type="number"]:focus, .input-group select:focus {
     border-color: var(--accent-blue);
     box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
 }
