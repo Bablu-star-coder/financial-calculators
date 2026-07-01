@@ -11,7 +11,7 @@ app.set('views', path.join(__dirname, 'views'));
 
 // 3. Define the routes for your three distinct calculator views
 app.get('/', (req, res) => {
-    res.render('index'); // Renders views/index.ejs (SWP)
+    res.redirect('/riskprofile'); // Default to Risk Profile Survey
 });
 
 app.get('/sip', (req, res) => {
@@ -32,6 +32,10 @@ app.get('/stepupsip', (req, res) => {
 
 app.get('/incometax', (req, res) => {
     res.render('incometax'); // Renders views/incometax.ejs (Income Tax)
+});
+
+app.get('/riskprofile', (req, res) => {
+    res.render('riskprofile'); // Renders views/riskprofile.ejs (Risk Profile Survey)
 });
 
 app.get('/fd', (req, res) => {

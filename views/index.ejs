@@ -15,6 +15,7 @@
         
         <div class="tabs">
             <a href="/sip" class="tab-btn">SIP</a>
+            <a href="/riskprofile" class="tab-btn">Risk Profile</a>
             <a href="/swp" class="tab-btn active">SWP</a>
             <a href="/stepupsip" class="tab-btn">Step-Up SIP</a>
             <a href="/inflation" class="tab-btn">SIP with Inflation</a>
@@ -52,6 +53,87 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="risk-questionnaire">
+        <h2>Risk Profile Survey</h2>
+        <p class="survey-intro">Answer these 9 questions to determine your SIP risk profile and apply it automatically on the SIP page.</p>
+        <form id="riskSurveyForm">
+            <div class="question-group">
+                <label>1. What is your investment horizon?</label>
+                <div class="radio-options">
+                    <label><input type="radio" name="q1" value="1" checked> Less than 3 years</label>
+                    <label><input type="radio" name="q1" value="2"> 3 - 7 years</label>
+                    <label><input type="radio" name="q1" value="3"> More than 7 years</label>
+                </div>
+            </div>
+            <div class="question-group">
+                <label>2. How do you feel about market volatility?</label>
+                <div class="radio-options">
+                    <label><input type="radio" name="q2" value="1" checked> I prefer stable returns</label>
+                    <label><input type="radio" name="q2" value="2"> Some ups and downs are okay</label>
+                    <label><input type="radio" name="q2" value="3"> I can tolerate large swings</label>
+                </div>
+            </div>
+            <div class="question-group">
+                <label>3. What is your goal for this investment?</label>
+                <div class="radio-options">
+                    <label><input type="radio" name="q3" value="1" checked> Capital protection</label>
+                    <label><input type="radio" name="q3" value="2"> Balanced growth</label>
+                    <label><input type="radio" name="q3" value="3"> Aggressive wealth creation</label>
+                </div>
+            </div>
+            <div class="question-group">
+                <label>4. How long can you leave this money invested?</label>
+                <div class="radio-options">
+                    <label><input type="radio" name="q4" value="1" checked> Less than 3 years</label>
+                    <label><input type="radio" name="q4" value="2"> 3 - 5 years</label>
+                    <label><input type="radio" name="q4" value="3"> More than 5 years</label>
+                </div>
+            </div>
+            <div class="question-group">
+                <label>5. How would you react to a 10% loss?</label>
+                <div class="radio-options">
+                    <label><input type="radio" name="q5" value="1" checked> I would sell quickly</label>
+                    <label><input type="radio" name="q5" value="2"> I would wait and decide</label>
+                    <label><input type="radio" name="q5" value="3"> I would hold and stay calm</label>
+                </div>
+            </div>
+            <div class="question-group">
+                <label>6. How experienced are you with investments?</label>
+                <div class="radio-options">
+                    <label><input type="radio" name="q6" value="1" checked> Beginner</label>
+                    <label><input type="radio" name="q6" value="2"> Some experience</label>
+                    <label><input type="radio" name="q6" value="3"> Very experienced</label>
+                </div>
+            </div>
+            <div class="question-group">
+                <label>7. What is your primary source of future income?</label>
+                <div class="radio-options">
+                    <label><input type="radio" name="q7" value="1" checked> Salary or fixed income</label>
+                    <label><input type="radio" name="q7" value="2"> Mixed sources</label>
+                    <label><input type="radio" name="q7" value="3"> Investment returns</label>
+                </div>
+            </div>
+            <div class="question-group">
+                <label>8. If the market drops, what is your plan?</label>
+                <div class="radio-options">
+                    <label><input type="radio" name="q8" value="1" checked> Move to cash</label>
+                    <label><input type="radio" name="q8" value="2"> Wait and review</label>
+                    <label><input type="radio" name="q8" value="3"> Buy more selectively</label>
+                </div>
+            </div>
+            <div class="question-group">
+                <label>9. What is more important to you?</label>
+                <div class="radio-options">
+                    <label><input type="radio" name="q9" value="1" checked> Safety</label>
+                    <label><input type="radio" name="q9" value="2"> Balance</label>
+                    <label><input type="radio" name="q9" value="3"> Growth</label>
+                </div>
+            </div>
+            <button type="button" class="primary-button" onclick="analyzeRiskProfile()">Analyze my risk profile</button>
+            <div id="riskProfileResult" class="results-text"></div>
+        </form>
     </div>
 
     <script src="/script.js"></script>

@@ -26,25 +26,144 @@ function computeSIP() {
     const P = Number(document.getElementById('sipAmount').value);
     const annualRate = Number(document.getElementById('sipRate').value);
     const years = Number(document.getElementById('sipYears').value);
+    const planType = document.getElementById('sipPlanType').value;
+    const riskProfile = document.getElementById('sipRiskProfile').value;
+    let expenseRatio = Number(document.getElementById('sipExpenseRatio').value);
+    if (Number.isNaN(expenseRatio)) {
+        expenseRatio = 0.75;
+    }
 
     if (!P || !annualRate || !years) return;
 
-    const i = (annualRate / 100) / 12;
+    const planLabels = {
+        direct: 'Direct',
+        regular: 'Regular'
+    };
+
+    const profileLabels = {
+        conservative: 'Conservative',
+        moderate: 'Moderate',
+        aggressive: 'Aggressive'
+    };
+
+    const profileRange = {
+        conservative: '6% - 10%',
+        moderate: '10% - 14%',
+        aggressive: '14% - 18%'
+    };
+
+    const adjustedAnnualRate = Math.max(0, annualRate - expenseRatio);
+    const i = (adjustedAnnualRate / 100) / 12;
     const n = Math.round(years * 12);
 
     const invested = P * n;
-    
-    // Groww Baseline Formula
     const totalValue = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
     const gains = totalValue - invested;
 
     document.getElementById('sipResultOutputs').innerHTML = `
         <div class="result-row"><span>Invested amount</span> <strong>₹${invested.toLocaleString('en-IN')}</strong></div>
+        <div class="result-row"><span>Plan type</span> <strong>${planLabels[planType]}</strong></div>
+        <div class="result-row"><span>Expense ratio</span> <strong>${expenseRatio.toFixed(2)}%</strong></div>
+        <div class="result-row"><span>Risk profile</span> <strong>${profileLabels[riskProfile]}</strong></div>
+        <div class="result-row"><span>Suggested range</span> <strong>${profileRange[riskProfile]}</strong></div>
+        <div class="result-row"><span>Adjusted return rate</span> <strong>${adjustedAnnualRate.toFixed(2)}%</strong></div>
         <div class="result-row"><span>Est. returns</span> <strong>₹${Math.round(gains).toLocaleString('en-IN')}</strong></div>
         <div class="result-row"><span>Total value</span> <strong>₹${Math.round(totalValue).toLocaleString('en-IN')}</strong></div>
     `;
 
     updateChart('sipChart', ['Invested amount', 'Est. returns'], [invested, gains], ['#e2e8f0', '#4466ff']);
+}
+
+function updateSIPExpenseRatioField() {
+    const planType = document.getElementById('sipPlanType').value;
+    const expenseRatioField = document.getElementById('sipExpenseRatio');
+    const expenseRatioSlider = document.getElementById('sipExpenseRatioSlider');
+
+    if (planType === 'regular') {
+        expenseRatioField.value = '1.50';
+        expenseRatioSlider.value = '1.50';
+        expenseRatioField.disabled = true;
+        expenseRatioSlider.disabled = true;
+    } else {
+        expenseRatioField.disabled = false;
+        expenseRatioSlider.disabled = false;
+        const currentValue = Number(expenseRatioField.value);
+        if (Number.isNaN(currentValue) || currentValue <= 0) {
+            expenseRatioField.value = '0.75';
+            expenseRatioSlider.value = '0.75';
+        } else {
+            expenseRatioSlider.value = expenseRatioField.value;
+        }
+    }
+
+    computeSIP();
+}
+
+function loadSIPProfileFromSurvey() {
+    const profile = localStorage.getItem('sipRiskProfile');
+    if (!profile) return;
+
+    const select = document.getElementById('sipRiskProfile');
+    if (select && Array.from(select.options).some(opt => opt.value === profile)) {
+        select.value = profile;
+    }
+}
+
+function handleSIPRiskProfileChange() {
+    const profile = document.getElementById('sipRiskProfile').value;
+    localStorage.setItem('sipRiskProfile', profile);
+    computeSIP();
+}
+
+function loadRiskSurveyFromStorage() {
+    const profile = localStorage.getItem('sipRiskProfile');
+    if (!profile) return;
+
+    const profileName = {
+        conservative: 'Conservative',
+        moderate: 'Moderate',
+        aggressive: 'Aggressive'
+    }[profile];
+
+    const result = document.getElementById('riskProfileResult');
+    if (result && profileName) {
+        result.innerHTML = `
+            <div class="result-row"><span>Saved risk profile</span> <strong>${profileName}</strong></div>
+            <div class="result-row"><span>Loaded from storage</span> <strong>Yes</strong></div>
+        `;
+    }
+}
+
+function analyzeRiskProfile() {
+    const form = document.getElementById('riskSurveyForm');
+    let score = 0;
+
+    for (let i = 1; i <= 9; i += 1) {
+        const answer = form.querySelector(`input[name='q${i}']:checked`);
+        score += answer ? Number(answer.value) : 1;
+    }
+
+    let profile = 'Conservative';
+    let message = 'Your answers suggest a cautious approach with a preference for capital protection.';
+
+    if (score >= 14 && score <= 18) {
+        profile = 'Moderate';
+        message = 'You are comfortable with some volatility and seek a balanced growth strategy.';
+    } else if (score >= 19) {
+        profile = 'Aggressive';
+        message = 'You can tolerate higher risk for better long-term growth potential.';
+    }
+
+    document.getElementById('riskProfileResult').innerHTML = `
+        <div class="result-row"><span>Risk profile</span> <strong>${profile}</strong></div>
+        <div class="result-row"><span>Score</span> <strong>${score}</strong></div>
+        <div class="result-row"><span>Insight</span> <strong>${message}</strong></div>
+    `;
+
+    localStorage.setItem('sipRiskProfile', profile.toLowerCase());
+    setTimeout(() => {
+        window.location.href = '/sip';
+    }, 400);
 }
 
 // 3. SWP Calculation

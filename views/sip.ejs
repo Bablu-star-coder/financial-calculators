@@ -35,6 +35,26 @@
                     <input type="range" id="sipRateSlider" min="1" max="30" step="0.1" value="12" oninput="syncFields('sipRateSlider', 'sipRate')">
                 </div>
                 <div class="input-group">
+                    <label>Plan type</label>
+                    <select id="sipPlanType" onchange="updateSIPExpenseRatioField()">
+                        <option value="direct">Direct</option>
+                        <option value="regular">Regular</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Expense ratio (%)</label>
+                    <input type="number" id="sipExpenseRatio" value="0.75" step="0.01" min="0" oninput="syncFields('sipExpenseRatio', 'sipExpenseRatioSlider')">
+                    <input type="range" id="sipExpenseRatioSlider" min="0.1" max="3" step="0.01" value="0.75" oninput="syncFields('sipExpenseRatioSlider', 'sipExpenseRatio')">
+                </div>
+                <div class="input-group">
+                    <label>Risk profile</label>
+                    <select id="sipRiskProfile" onchange="handleSIPRiskProfileChange()">
+                        <option value="conservative">Conservative</option>
+                        <option value="moderate" selected>Moderate</option>
+                        <option value="aggressive">Aggressive</option>
+                    </select>
+                </div>
+                <div class="input-group">
                     <label>Time period (Years)</label>
                     <input type="number" id="sipYears" value="10" oninput="syncFields('sipYears', 'sipYearsSlider')">
                     <input type="range" id="sipYearsSlider" min="1" max="40" step="1" value="10" oninput="syncFields('sipYearsSlider', 'sipYears')">
@@ -52,6 +72,12 @@
     <script src="/script.js"></script>
     <script>
         window.addEventListener('DOMContentLoaded', () => {
+            if (typeof updateSIPExpenseRatioField === 'function') {
+                updateSIPExpenseRatioField();
+            }
+            if (typeof loadSIPProfileFromSurvey === 'function') {
+                loadSIPProfileFromSurvey();
+            }
             if (typeof computeSIP === 'function') {
                 computeSIP();
             }
